@@ -1,0 +1,23 @@
+name: iMusic
+options:
+  bundleIdPrefix: com.imusic
+  deploymentTarget:
+    iOS: "16.0"
+targets:
+  iMusic:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: iMusic
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.imusic.aiplayer
+        INFOPLIST_FILE: iMusic/Info.plist
+        MARKETING_VERSION: "2.0.0"
+        CURRENT_PROJECT_VERSION: "2"
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.9"
+        CODE_SIGN_IDENTITY: ""
+        CODE_SIGNING_REQUIRED: NO
+        CODE_SIGNING_ALLOWED: NO
