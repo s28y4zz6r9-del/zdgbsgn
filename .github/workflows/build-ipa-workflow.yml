@@ -1,0 +1,55 @@
+name: Build iMusic IPA
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-ipa:
+    runs-on: macos-14
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Locate Project & Generate Xcode Project
+        run: |
+          PROJ_FILE=$(find . -name "project.yml" | head -n 1)
+          PROJ_DIR=$(dirname "$PROJ_FILE")
+          echo "Found project in: $PROJ_DIR"
+          cd "$PROJ_DIR"
+          xcodegen generate
+          xcodebuild clean build \
+            -project iMusic.xcodeproj \
+            -scheme iMusic \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+          mkdir -p "$GITHUB_WORKSPACE/Payload"
+          cp -r build/Build/Products/Release-iphoneos/iMusic.app "$GITHUB_WORKSPACE/Payload/"
+          cd "$GITHUB_WORKSPACE"
+          zip -r9 iMusic.ipa Payload
+
+      - name: Upload iMusic.ipa Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: iMusic-IPA
+          path: iMusic.ipa
+
+      - name: Publish Direct Download in GitHub Releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v2.0.${{ github.run_number }}"
+          gh release create "$TAG" iMusic.ipa \
+            --title "iMusic v2.0 (AI Word-by-Word Lyrics & Music Haptics)" \
+            --notes "قم بتحميل ملف iMusic.ipa مباشرة وتوقيعه عبر ESign أو Scarlet أو Feather أو Sideloadly."
